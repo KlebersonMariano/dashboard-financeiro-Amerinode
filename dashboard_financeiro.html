@@ -1,825 +1,474 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BI Financeiro Amerinode 2026</title>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BI Financeiro - Amerinode 2026</title>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Segoe UI',Tahoma,sans-serif; background:#0a1628; color:#e0e0e0; min-height:100vh; }
+.header { background:linear-gradient(135deg,#0d1f3c 0%,#162d50 100%); padding:16px 28px; display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid #c0392b; }
+.header h1 { font-size:20px; font-weight:700; color:#fff; letter-spacing:1px; }
+.header .subtitle { font-size:12px; color:#8899aa; margin-top:2px; }
+.header-right { display:flex; align-items:center; gap:16px; }
+.meta-box { display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.06); border:1px solid #2a3f5f; border-radius:6px; padding:6px 14px; }
+.meta-box label { font-size:11px; color:#8899aa; text-transform:uppercase; letter-spacing:0.5px; }
+.meta-box input { width:130px; background:transparent; border:none; border-bottom:1px solid #c0392b; color:#fff; font-size:14px; font-weight:600; text-align:right; outline:none; padding:2px 0; }
+.update-info { font-size:11px; color:#5a7a9a; }
 
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
-        }
+.filters { padding:12px 28px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.filters label { font-size:11px; color:#8899aa; margin-right:6px; text-transform:uppercase; letter-spacing:0.5px; }
+.fbtn { padding:6px 16px; border-radius:20px; border:1px solid #2a3f5f; background:transparent; color:#b0c4de; font-size:12px; font-weight:500; cursor:pointer; transition:all .2s; }
+.fbtn:hover { border-color:#c0392b; color:#fff; }
+.fbtn.active { background:#c0392b; border-color:#c0392b; color:#fff; font-weight:600; }
 
-        /* Header */
-        .header {
-            background-color: #0A1628;
-            color: white;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
+.cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; padding:16px 28px; }
+.card { background:linear-gradient(135deg,#0f2240 0%,#162d50 100%); border-radius:10px; padding:18px 20px; border-left:4px solid #c0392b; position:relative; overflow:hidden; }
+.card::after { content:''; position:absolute; top:0; right:0; width:60px; height:60px; background:radial-gradient(circle at top right,rgba(192,57,43,0.12),transparent); }
+.card .label { font-size:11px; color:#8899aa; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px; }
+.card .value { font-size:26px; font-weight:700; color:#fff; }
+.card .sub { font-size:12px; margin-top:4px; }
+.card .sub.up { color:#27ae60; }
+.card .sub.down { color:#e74c3c; }
+.card .sub.neutral { color:#8899aa; }
+.card.meta-card { border-left-color:#f39c12; }
+.card.meta-card .bar-bg { height:6px; background:#1a2a44; border-radius:3px; margin-top:10px; }
+.card.meta-card .bar-fill { height:6px; border-radius:3px; transition:width .5s; }
 
-        .header-content {
-            max-width: 1600px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+.chart-section { padding:8px 28px 16px; }
+.chart-box { background:#0f2240; border-radius:10px; padding:16px; margin-bottom:16px; }
+.chart-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.chart-title { font-size:14px; font-weight:600; color:#fff; }
+.toggle-group { display:flex; gap:0; }
+.toggle-btn { padding:5px 16px; font-size:11px; border:1px solid #2a3f5f; background:transparent; color:#b0c4de; cursor:pointer; transition:all .2s; }
+.toggle-btn:first-child { border-radius:4px 0 0 4px; }
+.toggle-btn:last-child { border-radius:0 4px 4px 0; }
+.toggle-btn.active { background:#c0392b; border-color:#c0392b; color:#fff; }
 
-        .header-title {
-            font-size: 28px;
-            font-weight: bold;
-            letter-spacing: 0.5px;
-        }
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+@media(max-width:900px){ .grid-2{grid-template-columns:1fr;} }
 
-        .header-subtitle {
-            font-size: 12px;
-            color: #aaa;
-            margin-top: 4px;
-        }
-
-        /* Filter Buttons */
-        .filter-section {
-            background-color: white;
-            padding: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-
-        .filter-container {
-            max-width: 1600px;
-            margin: 0 auto;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .filter-label {
-            font-weight: bold;
-            color: #0A1628;
-            display: flex;
-            align-items: center;
-            margin-right: 10px;
-        }
-
-        .filter-btn {
-            padding: 10px 20px;
-            border: 2px solid #1B3A5C;
-            background-color: white;
-            color: #1B3A5C;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-
-        .filter-btn:hover {
-            background-color: #1B3A5C;
-            color: white;
-        }
-
-        .filter-btn.active {
-            background-color: #1B3A5C;
-            color: white;
-            border-color: #1B3A5C;
-        }
-
-        /* KPI Cards */
-        .kpi-section {
-            background-color: white;
-            padding: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-
-        .kpi-container {
-            max-width: 1600px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-
-        .kpi-card {
-            background: linear-gradient(135deg, #1B3A5C 0%, #0A1628 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        }
-
-        .kpi-card.red {
-            background: linear-gradient(135deg, #C41E3A 0%, #8B1528 100%);
-        }
-
-        .kpi-label {
-            font-size: 12px;
-            color: #ccc;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .kpi-value {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 8px;
-            word-break: break-word;
-        }
-
-        .kpi-subvalue {
-            font-size: 12px;
-            color: #aaa;
-        }
-
-        .kpi-variation {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 8px;
-            font-size: 14px;
-        }
-
-        .variation-positive {
-            color: #4CAF50;
-        }
-
-        .variation-negative {
-            color: #FF5252;
-        }
-
-        .arrow {
-            font-size: 18px;
-        }
-
-        .meta-input {
-            background-color: #0A1628;
-            border: 1px solid #333;
-            color: white;
-            padding: 6px 10px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .meta-input:hover {
-            border-color: #666;
-        }
-
-        /* Main Content */
-        .main-content {
-            background-color: white;
-            padding: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-
-        .main-content-inner {
-            max-width: 1600px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 30px;
-        }
-
-        .chart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .chart-title {
-            font-size: 16px;
-            font-weight: bold;
-            color: #0A1628;
-        }
-
-        .toggle-btn-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        .toggle-btn {
-            padding: 8px 16px;
-            border: 1px solid #1B3A5C;
-            background-color: white;
-            color: #1B3A5C;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-
-        .toggle-btn.active {
-            background-color: #1B3A5C;
-            color: white;
-        }
-
-        .toggle-btn:hover {
-            background-color: #1B3A5C;
-            color: white;
-        }
-
-        .chart-container {
-            background-color: #fafafa;
-            border-radius: 8px;
-            padding: 0;
-            min-height: 400px;
-        }
-
-        /* Bottom Row */
-        .bottom-section {
-            background-color: white;
-            padding: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        .bottom-content {
-            max-width: 1600px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-        }
-
-        .table-container {
-            overflow-x: auto;
-        }
-
-        .detail-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
-
-        .detail-table thead {
-            background-color: #0A1628;
-            color: white;
-        }
-
-        .detail-table th {
-            padding: 12px;
-            text-align: left;
-            font-weight: bold;
-            border: 1px solid #ddd;
-        }
-
-        .detail-table td {
-            padding: 12px;
-            border: 1px solid #ddd;
-            background-color: white;
-        }
-
-        .detail-table tbody tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-
-        .detail-table tbody tr:hover {
-            background-color: #f0f0f0;
-        }
-
-        /* Warehouse Chart */
-        .warehouse-container {
-            background-color: #fafafa;
-            border-radius: 8px;
-            padding: 0;
-            min-height: 400px;
-        }
-
-        /* Responsive */
-        @media (max-width: 1200px) {
-            .main-content-inner {
-                grid-template-columns: 1fr;
-            }
-
-            .bottom-content {
-                grid-template-columns: 1fr;
-            }
-
-            .kpi-container {
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            }
-        }
-
-        .wrapper {
-            max-width: 1600px;
-            margin: 0 auto;
-        }
-    </style>
+.table-box { background:#0f2240; border-radius:10px; padding:16px; margin-top:16px; }
+.table-box h3 { font-size:13px; color:#fff; margin-bottom:10px; }
+table { width:100%; border-collapse:collapse; font-size:12px; }
+th { background:#162d50; color:#8899aa; text-transform:uppercase; letter-spacing:0.5px; padding:8px 10px; text-align:right; font-weight:600; font-size:10px; }
+th:first-child { text-align:left; }
+td { padding:7px 10px; border-bottom:1px solid #1a2a44; text-align:right; color:#d0d8e0; }
+td:first-child { text-align:left; color:#fff; font-weight:500; }
+tr:hover td { background:rgba(192,57,43,0.06); }
+</style>
 </head>
 <body>
-    <!-- Header -->
-    <div class="header">
-        <div class="header-content">
-            <div>
-                <div class="header-title">BI Financeiro Amerinode 2026</div>
-                <div class="header-subtitle">Dashboard de Análise Financeira</div>
-            </div>
-            <div style="text-align: right; font-size: 24px; font-weight: bold;">amerinode</div>
-        </div>
+
+<div class="header">
+  <div>
+    <h1>BI FINANCEIRO &mdash; AMERINODE 2026</h1>
+    <div class="subtitle">Consolidação de Faturamento por PMO e Warehouse</div>
+  </div>
+  <div class="header-right">
+    <div class="meta-box">
+      <label>Meta Semanal</label>
+      <input type="text" id="metaInput" value="375.000,00" onchange="updateMeta()">
     </div>
+    <div class="update-info" id="updateInfo"></div>
+  </div>
+</div>
 
-    <!-- Filter Section -->
-    <div class="filter-section">
-        <div class="filter-container">
-            <div class="filter-label">Filtrar por PMO:</div>
-            <button class="filter-btn active" onclick="filterByPMO('Todos')">Todos</button>
-            <button class="filter-btn" onclick="filterByPMO('VIVO REPARO')">VIVO REPARO</button>
-            <button class="filter-btn" onclick="filterByPMO('VITAL')">VITAL</button>
-            <button class="filter-btn" onclick="filterByPMO('MILETO')">MILETO</button>
-            <button class="filter-btn" onclick="filterByPMO('VIVO N3')">VIVO N3</button>
-            <button class="filter-btn" onclick="filterByPMO('VIVO SPM')">VIVO SPM</button>
-        </div>
+<div class="filters">
+  <label>Cliente / PMO:</label>
+  <button class="fbtn active" onclick="setFilter('Todos')">Todos</button>
+  <button class="fbtn" onclick="setFilter('VIVO REPARO')">VIVO REPARO</button>
+  <button class="fbtn" onclick="setFilter('VITAL')">VITAL</button>
+  <button class="fbtn" onclick="setFilter('MILETO')">MILETO</button>
+  <button class="fbtn" onclick="setFilter('VIVO N3')">VIVO N3</button>
+  <button class="fbtn" onclick="setFilter('VIVO SPM')">VIVO SPM</button>
+</div>
+
+<div class="cards" id="cardsContainer"></div>
+
+<div class="chart-section">
+  <div class="chart-box">
+    <div class="chart-header">
+      <span class="chart-title">Evolução do Faturamento</span>
+      <div class="toggle-group">
+        <button class="toggle-btn active" onclick="setView('weekly')">Semanal</button>
+        <button class="toggle-btn" onclick="setView('monthly')">Mensal</button>
+      </div>
     </div>
+    <div id="evolutionChart" style="height:340px;"></div>
+  </div>
 
-    <!-- KPI Cards Section -->
-    <div class="kpi-section">
-        <div class="kpi-container">
-            <div class="kpi-card">
-                <div class="kpi-label">Faturamento Mês</div>
-                <div class="kpi-value" id="kpi-month">R$ 0,00</div>
-                <div class="kpi-subvalue" id="kpi-month-period">Mês de Referência</div>
-            </div>
-
-            <div class="kpi-card">
-                <div class="kpi-label">Faturamento Semana</div>
-                <div class="kpi-value" id="kpi-week">R$ 0,00</div>
-                <div class="kpi-subvalue" id="kpi-week-period">Semana Atual</div>
-            </div>
-
-            <div class="kpi-card">
-                <div class="kpi-label">Semana Anterior</div>
-                <div class="kpi-value" id="kpi-prev-week">R$ 0,00</div>
-                <div class="kpi-subvalue">Comparativo</div>
-            </div>
-
-            <div class="kpi-card red">
-                <div class="kpi-label">Variação Semanal</div>
-                <div class="kpi-value" id="kpi-variation-value">R$ 0,00</div>
-                <div class="kpi-variation">
-                    <span class="arrow" id="variation-arrow">▲</span>
-                    <span id="kpi-variation-percent">0.0%</span>
-                </div>
-            </div>
-
-            <div class="kpi-card">
-                <div class="kpi-label">Meta Semana</div>
-                <div class="kpi-value" style="font-size: 18px;">
-                    <input type="text" id="meta-input" class="meta-input" value="R$ 375.000,00" onclick="editMeta()" onblur="saveMeta()">
-                </div>
-                <div class="kpi-subvalue">Clique para editar</div>
-            </div>
-        </div>
+  <div class="grid-2">
+    <div class="chart-box">
+      <div class="chart-title" style="margin-bottom:12px;">Faturamento por PMO</div>
+      <div id="pmoChart" style="height:300px;"></div>
     </div>
-
-    <!-- Main Charts -->
-    <div class="main-content">
-        <div class="main-content-inner">
-            <!-- Evolution Chart -->
-            <div>
-                <div class="chart-header">
-                    <div class="chart-title">Evolução de Faturamento</div>
-                    <div class="toggle-btn-group">
-                        <button class="toggle-btn active" onclick="toggleChartView('monthly')">Mensal</button>
-                        <button class="toggle-btn" onclick="toggleChartView('weekly')">Semanal</button>
-                    </div>
-                </div>
-                <div class="chart-container" id="evolution-chart"></div>
-            </div>
-
-            <!-- PMO Chart -->
-            <div>
-                <div class="chart-header">
-                    <div class="chart-title">Faturamento por Cliente</div>
-                </div>
-                <div class="chart-container" id="pmo-chart"></div>
-            </div>
-        </div>
+    <div class="chart-box">
+      <div class="chart-title" style="margin-bottom:12px;">Faturamento por Warehouse</div>
+      <div id="whChart" style="height:340px;"></div>
     </div>
+  </div>
 
-    <!-- Bottom Section -->
-    <div class="bottom-section">
-        <div class="bottom-content">
-            <!-- Detail Table -->
-            <div>
-                <div class="chart-header" style="margin-bottom: 20px;">
-                    <div class="chart-title">Detalhes por Cliente</div>
-                </div>
-                <div class="table-container">
-                    <table class="detail-table">
-                        <thead>
-                            <tr>
-                                <th>PMO</th>
-                                <th>Faturamento</th>
-                                <th>Semana Anterior</th>
-                                <th>Evolução R$</th>
-                                <th>Variação %</th>
-                            </tr>
-                        </thead>
-                        <tbody id="detail-table-body">
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Warehouse Chart -->
-            <div>
-                <div class="chart-header" style="margin-bottom: 20px;">
-                    <div class="chart-title">Faturamento por Warehouse</div>
-                </div>
-                <div class="warehouse-container" id="warehouse-chart"></div>
-            </div>
-        </div>
+  <div class="grid-2">
+    <div class="table-box">
+      <h3>Detalhamento Mensal por PMO</h3>
+      <div id="monthlyTable"></div>
     </div>
+    <div class="table-box">
+      <h3>Detalhamento Mensal por Warehouse</h3>
+      <div id="whTable"></div>
+    </div>
+  </div>
+</div>
 
-    <script>
-        // Embedded Data
-        const dashboardData = {"weekly_target": 375000, "pmos": ["MILETO", "VITAL", "VIVO N3", "VIVO REPARO", "VIVO SPM"], "warehouses": ["JDI Remanufatura", "Jaguare", "Jundiái", "Reparo Terceiros", "Rio de Janeiro (Remanufatura)", "SPM BBN", "SPM Regional SP", "Sta Rita"], "weeks": ["2026-W01", "2026-W02", "2026-W03", "2026-W04", "2026-W05", "2026-W06", "2026-W07", "2026-W08", "2026-W09", "2026-W10", "2026-W11", "2026-W12", "2026-W13"], "months": ["2026-01", "2026-02", "2026-03"], "weekly": {"total": {"2026-W01": 97774.47, "2026-W02": 464401.92, "2026-W03": 480444.1, "2026-W04": 494014.93, "2026-W05": 661258.99, "2026-W06": 554018.15, "2026-W07": 539924.62, "2026-W08": 411775.13, "2026-W09": 589983.81, "2026-W10": 650210.66, "2026-W11": 621462.5, "2026-W12": 489003.32, "2026-W13": 629051.73}, "by_pmo": {"2026-W01": {"MILETO": 0, "VITAL": 0, "VIVO N3": 0, "VIVO REPARO": 74565.58, "VIVO SPM": 23208.89}, "2026-W02": {"MILETO": 44368.0, "VITAL": 198989.7, "VIVO N3": 0, "VIVO REPARO": 118227.46, "VIVO SPM": 102816.76}, "2026-W03": {"MILETO": 16249.78, "VITAL": 152950.8, "VIVO N3": 0, "VIVO REPARO": 214615.72, "VIVO SPM": 96627.8}, "2026-W04": {"MILETO": 0, "VITAL": 158210.7, "VIVO N3": 0, "VIVO REPARO": 242737.05, "VIVO SPM": 93067.18}, "2026-W05": {"MILETO": 48804.8, "VITAL": 160811.1, "VIVO N3": 22804.57, "VIVO REPARO": 339049.39, "VIVO SPM": 89789.13}, "2026-W06": {"MILETO": 17747.2, "VITAL": 190085.3, "VIVO N3": 0, "VIVO REPARO": 225392.61, "VIVO SPM": 120793.04}, "2026-W07": {"MILETO": 22184.0, "VITAL": 195561.9, "VIVO N3": 0, "VIVO REPARO": 203180.27, "VIVO SPM": 118998.45}, "2026-W08": {"MILETO": 9844.15, "VITAL": 145267.8, "VIVO N3": 0, "VIVO REPARO": 135967.75, "VIVO SPM": 120695.43}, "2026-W09": {"MILETO": 30308.89, "VITAL": 209194.3, "VIVO N3": 0, "VIVO REPARO": 244322.32, "VIVO SPM": 106158.3}, "2026-W10": {"MILETO": 0, "VITAL": 210730.9, "VIVO N3": 0, "VIVO REPARO": 296022.74, "VIVO SPM": 143457.02}, "2026-W11": {"MILETO": 0, "VITAL": 230884.0, "VIVO N3": 0, "VIVO REPARO": 210988.43, "VIVO SPM": 179590.07}, "2026-W12": {"MILETO": 0, "VITAL": 205825.6, "VIVO N3": 0, "VIVO REPARO": 174773.08, "VIVO SPM": 108404.64}, "2026-W13": {"MILETO": 0, "VITAL": 245836.3, "VIVO N3": 0, "VIVO REPARO": 260689.57, "VIVO SPM": 122525.86}}, "by_warehouse": {"2026-W01": {"JDI Remanufatura": 0, "Jaguare": 22509.83, "Jundiái": 24839.0, "Reparo Terceiros": 27216.75, "Rio de Janeiro (Remanufatura)": 0, "SPM BBN": 0, "SPM Regional SP": 23208.89, "Sta Rita": 0}, "2026-W02": {"JDI Remanufatura": 0, "Jaguare": 20116.43, "Jundiái": 33987.16, "Reparo Terceiros": 48520.67, "Rio de Janeiro (Remanufatura)": 243357.7, "SPM BBN": 0, "SPM Regional SP": 102816.76, "Sta Rita": 15603.2}, "2026-W03": {"JDI Remanufatura": 0, "Jaguare": 34274.31, "Jundiái": 46566.89, "Reparo Terceiros": 22971.18, "Rio de Janeiro (Remanufatura)": 169200.58, "SPM BBN": 0, "SPM Regional SP": 96627.8, "Sta Rita": 110803.34}, "2026-W04": {"JDI Remanufatura": 0, "Jaguare": 9509.77, "Jundiái": 60479.5, "Reparo Terceiros": 98677.93, "Rio de Janeiro (Remanufatura)": 158210.7, "SPM BBN": 0, "SPM Regional SP": 93067.18, "Sta Rita": 74069.85}, "2026-W05": {"JDI Remanufatura": 22804.57, "Jaguare": 27397.43, "Jundiái": 103307.53, "Reparo Terceiros": 103664.64, "Rio de Janeiro (Remanufatura)": 209615.9, "SPM BBN": 0, "SPM Regional SP": 89789.13, "Sta Rita": 104679.79}, "2026-W06": {"JDI Remanufatura": 0, "Jaguare": 13212.68, "Jundiái": 49740.58, "Reparo Terceiros": 97169.87, "Rio de Janeiro (Remanufatura)": 207832.5, "SPM BBN": 8317.97, "SPM Regional SP": 112475.07, "Sta Rita": 65269.48}, "2026-W07": {"JDI Remanufatura": 0, "Jaguare": 24328.18, "Jundiái": 43580.8, "Reparo Terceiros": 34487.78, "Rio de Janeiro (Remanufatura)": 217745.9, "SPM BBN": 29001.66, "SPM Regional SP": 89996.79, "Sta Rita": 100783.51}, "2026-W08": {"JDI Remanufatura": 0, "Jaguare": 15280.55, "Jundiái": 69288.9, "Reparo Terceiros": 5120.07, "Rio de Janeiro (Remanufatura)": 155111.95, "SPM BBN": 18070.42, "SPM Regional SP": 102625.01, "Sta Rita": 46278.23}, "2026-W09": {"JDI Remanufatura": 0, "Jaguare": 28621.1, "Jundiái": 147175.39, "Reparo Terceiros": 1977.96, "Rio de Janeiro (Remanufatura)": 239503.19, "SPM BBN": 8317.97, "SPM Regional SP": 97840.33, "Sta Rita": 66547.87}, "2026-W10": {"JDI Remanufatura": 0, "Jaguare": 5882.62, "Jundiái": 133849.66, "Reparo Terceiros": 10191.76, "Rio de Janeiro (Remanufatura)": 210730.9, "SPM BBN": 51597.99, "SPM Regional SP": 91859.03, "Sta Rita": 146098.7}, "2026-W11": {"JDI Remanufatura": 0, "Jaguare": 28744.56, "Jundiái": 127309.66, "Reparo Terceiros": 37189.66, "Rio de Janeiro (Remanufatura)": 230884.0, "SPM BBN": 78464.54, "SPM Regional SP": 101125.53, "Sta Rita": 17744.55}, "2026-W12": {"JDI Remanufatura": 0, "Jaguare": 11255.77, "Jundiái": 30221.43, "Reparo Terceiros": 14276.72, "Rio de Janeiro (Remanufatura)": 205825.6, "SPM BBN": 14500.83, "SPM Regional SP": 93903.81, "Sta Rita": 119019.16}, "2026-W13": {"JDI Remanufatura": 0, "Jaguare": 0, "Jundiái": 83834.24, "Reparo Terceiros": 54086.68, "Rio de Janeiro (Remanufatura)": 245836.3, "SPM BBN": 31136.77, "SPM Regional SP": 91389.09, "Sta Rita": 122768.65}}}, "monthly": {"total": {"2026-01": 2109182.55, "2026-02": 2107454.04, "2026-03": 2392122.16}, "by_pmo": {"2026-01": {"MILETO": 109422.58, "VITAL": 670962.3, "VIVO N3": 22804.57, "VIVO REPARO": 902843.41, "VIVO SPM": 403149.69}, "2026-02": {"MILETO": 80084.24, "VITAL": 740109.3, "VIVO N3": 0, "VIVO REPARO": 820649.16, "VIVO SPM": 466611.34}, "2026-03": {"MILETO": 0, "VITAL": 893276.8, "VIVO N3": 0, "VIVO REPARO": 942473.82, "VIVO SPM": 556371.54}}, "by_warehouse": {"2026-01": {"JDI Remanufatura": 22804.57, "Jaguare": 91297.94, "Jundiái": 232554.87, "Reparo Terceiros": 273834.42, "Rio de Janeiro (Remanufatura)": 780384.88, "SPM BBN": 0, "SPM Regional SP": 403149.69, "Sta Rita": 305156.18}, "2026-02": {"JDI Remanufatura": 0, "Jaguare": 81442.51, "Jundiái": 321571.88, "Reparo Terceiros": 138755.68, "Rio de Janeiro (Remanufatura)": 820193.54, "SPM BBN": 63708.02, "SPM Regional SP": 402903.32, "Sta Rita": 278879.09}, "2026-03": {"JDI Remanufatura": 0, "Jaguare": 45882.95, "Jundiái": 375214.99, "Reparo Terceiros": 115744.82, "Rio de Janeiro (Remanufatura)": 893276.8, "SPM BBN": 175700.13, "SPM Regional SP": 380671.41, "Sta Rita": 405631.06}}}};
+<script>
+// ========== DATA ==========
+const DATA = {"weekly_target":375000,"pmos":["MILETO","VITAL","VIVO N3","VIVO REPARO","VIVO SPM"],"warehouses":["JDI Remanufatura","Jaguare","Jundia\u00ed","Reparo Terceiros","Rio de Janeiro (Remanufatura)","SPM BBN","SPM Regional SP","Sta Rita"],"weeks":["2026-W01","2026-W02","2026-W03","2026-W04","2026-W05","2026-W06","2026-W07","2026-W08","2026-W09","2026-W10","2026-W11","2026-W12","2026-W13"],"months":["2026-01","2026-02","2026-03"],"weekly":{"total":{"2026-W01":97774.47,"2026-W02":464401.92,"2026-W03":480444.1,"2026-W04":494014.93,"2026-W05":661258.99,"2026-W06":554018.15,"2026-W07":539924.62,"2026-W08":411775.13,"2026-W09":589983.81,"2026-W10":650210.66,"2026-W11":621462.5,"2026-W12":489003.32,"2026-W13":629051.73},"by_pmo":{"2026-W01":{"MILETO":0,"VITAL":0,"VIVO N3":0,"VIVO REPARO":74565.58,"VIVO SPM":23208.89},"2026-W02":{"MILETO":44368.0,"VITAL":198989.7,"VIVO N3":0,"VIVO REPARO":118227.46,"VIVO SPM":102816.76},"2026-W03":{"MILETO":16249.78,"VITAL":152950.8,"VIVO N3":0,"VIVO REPARO":214615.72,"VIVO SPM":96627.8},"2026-W04":{"MILETO":0,"VITAL":158210.7,"VIVO N3":0,"VIVO REPARO":242737.05,"VIVO SPM":93067.18},"2026-W05":{"MILETO":48804.8,"VITAL":160811.1,"VIVO N3":22804.57,"VIVO REPARO":339049.39,"VIVO SPM":89789.13},"2026-W06":{"MILETO":17747.2,"VITAL":190085.3,"VIVO N3":0,"VIVO REPARO":225392.61,"VIVO SPM":120793.04},"2026-W07":{"MILETO":22184.0,"VITAL":195561.9,"VIVO N3":0,"VIVO REPARO":203180.27,"VIVO SPM":118998.45},"2026-W08":{"MILETO":9844.15,"VITAL":145267.8,"VIVO N3":0,"VIVO REPARO":135967.75,"VIVO SPM":120695.43},"2026-W09":{"MILETO":30308.89,"VITAL":209194.3,"VIVO N3":0,"VIVO REPARO":244322.32,"VIVO SPM":106158.3},"2026-W10":{"MILETO":0,"VITAL":210730.9,"VIVO N3":0,"VIVO REPARO":296022.74,"VIVO SPM":143457.02},"2026-W11":{"MILETO":0,"VITAL":230884.0,"VIVO N3":0,"VIVO REPARO":210988.43,"VIVO SPM":179590.07},"2026-W12":{"MILETO":0,"VITAL":205825.6,"VIVO N3":0,"VIVO REPARO":174773.08,"VIVO SPM":108404.64},"2026-W13":{"MILETO":0,"VITAL":245836.3,"VIVO N3":0,"VIVO REPARO":260689.57,"VIVO SPM":122525.86}},"by_warehouse":{"2026-W01":{"JDI Remanufatura":0,"Jaguare":22509.83,"Jundia\u00ed":24839.0,"Reparo Terceiros":27216.75,"Rio de Janeiro (Remanufatura)":0,"SPM BBN":0,"SPM Regional SP":23208.89,"Sta Rita":0},"2026-W02":{"JDI Remanufatura":0,"Jaguare":20116.43,"Jundia\u00ed":33987.16,"Reparo Terceiros":48520.67,"Rio de Janeiro (Remanufatura)":243357.7,"SPM BBN":0,"SPM Regional SP":102816.76,"Sta Rita":15603.2},"2026-W03":{"JDI Remanufatura":0,"Jaguare":34274.31,"Jundia\u00ed":46566.89,"Reparo Terceiros":22971.18,"Rio de Janeiro (Remanufatura)":169200.58,"SPM BBN":0,"SPM Regional SP":96627.8,"Sta Rita":110803.34},"2026-W04":{"JDI Remanufatura":0,"Jaguare":9509.77,"Jundia\u00ed":60479.5,"Reparo Terceiros":98677.93,"Rio de Janeiro (Remanufatura)":158210.7,"SPM BBN":0,"SPM Regional SP":93067.18,"Sta Rita":74069.85},"2026-W05":{"JDI Remanufatura":22804.57,"Jaguare":27397.43,"Jundia\u00ed":103307.53,"Reparo Terceiros":103664.64,"Rio de Janeiro (Remanufatura)":209615.9,"SPM BBN":0,"SPM Regional SP":89789.13,"Sta Rita":104679.79},"2026-W06":{"JDI Remanufatura":0,"Jaguare":13212.68,"Jundia\u00ed":49740.58,"Reparo Terceiros":97169.87,"Rio de Janeiro (Remanufatura)":207832.5,"SPM BBN":8317.97,"SPM Regional SP":112475.07,"Sta Rita":65269.48},"2026-W07":{"JDI Remanufatura":0,"Jaguare":24328.18,"Jundia\u00ed":43580.8,"Reparo Terceiros":34487.78,"Rio de Janeiro (Remanufatura)":217745.9,"SPM BBN":29001.66,"SPM Regional SP":89996.79,"Sta Rita":100783.51},"2026-W08":{"JDI Remanufatura":0,"Jaguare":15280.55,"Jundia\u00ed":69288.9,"Reparo Terceiros":5120.07,"Rio de Janeiro (Remanufatura)":155111.95,"SPM BBN":18070.42,"SPM Regional SP":102625.01,"Sta Rita":46278.23},"2026-W09":{"JDI Remanufatura":0,"Jaguare":28621.1,"Jundia\u00ed":147175.39,"Reparo Terceiros":1977.96,"Rio de Janeiro (Remanufatura)":239503.19,"SPM BBN":8317.97,"SPM Regional SP":97840.33,"Sta Rita":66547.87},"2026-W10":{"JDI Remanufatura":0,"Jaguare":5882.62,"Jundia\u00ed":133849.66,"Reparo Terceiros":10191.76,"Rio de Janeiro (Remanufatura)":210730.9,"SPM BBN":51597.99,"SPM Regional SP":91859.03,"Sta Rita":146098.7},"2026-W11":{"JDI Remanufatura":0,"Jaguare":28744.56,"Jundia\u00ed":127309.66,"Reparo Terceiros":37189.66,"Rio de Janeiro (Remanufatura)":230884.0,"SPM BBN":78464.54,"SPM Regional SP":101125.53,"Sta Rita":17744.55},"2026-W12":{"JDI Remanufatura":0,"Jaguare":11255.77,"Jundia\u00ed":30221.43,"Reparo Terceiros":14276.72,"Rio de Janeiro (Remanufatura)":205825.6,"SPM BBN":14500.83,"SPM Regional SP":93903.81,"Sta Rita":119019.16},"2026-W13":{"JDI Remanufatura":0,"Jaguare":0,"Jundia\u00ed":83834.24,"Reparo Terceiros":54086.68,"Rio de Janeiro (Remanufatura)":245836.3,"SPM BBN":31136.77,"SPM Regional SP":91389.09,"Sta Rita":122768.65}}},"monthly":{"total":{"2026-01":2109182.55,"2026-02":2107454.04,"2026-03":2392122.16},"by_pmo":{"2026-01":{"MILETO":109422.58,"VITAL":670962.3,"VIVO N3":22804.57,"VIVO REPARO":902843.41,"VIVO SPM":403149.69},"2026-02":{"MILETO":80084.24,"VITAL":740109.3,"VIVO N3":0,"VIVO REPARO":820649.16,"VIVO SPM":466611.34},"2026-03":{"MILETO":0,"VITAL":893276.8,"VIVO N3":0,"VIVO REPARO":942473.82,"VIVO SPM":556371.54}},"by_warehouse":{"2026-01":{"JDI Remanufatura":22804.57,"Jaguare":91297.94,"Jundia\u00ed":232554.87,"Reparo Terceiros":273834.42,"Rio de Janeiro (Remanufatura)":780384.88,"SPM BBN":0,"SPM Regional SP":403149.69,"Sta Rita":305156.18},"2026-02":{"JDI Remanufatura":0,"Jaguare":81442.51,"Jundia\u00ed":321571.88,"Reparo Terceiros":138755.68,"Rio de Janeiro (Remanufatura)":820193.54,"SPM BBN":63708.02,"SPM Regional SP":402903.32,"Sta Rita":278879.09},"2026-03":{"JDI Remanufatura":0,"Jaguare":45882.95,"Jundia\u00ed":375214.99,"Reparo Terceiros":115744.82,"Rio de Janeiro (Remanufatura)":893276.8,"SPM BBN":175700.13,"SPM Regional SP":380671.41,"Sta Rita":405631.06}}}};
 
-        let currentFilter = 'Todos';
-        let chartView = 'monthly';
-        let metaTarget = 375000;
+// ========== STATE ==========
+let currentFilter = 'Todos';
+let currentView = 'weekly';
+let weeklyTarget = DATA.weekly_target;
 
-        // Brazilian number format
-        function formatBRL(value) {
-            return new Intl.NumberFormat('pt-BR', {
-                style: 'currency',
-                currency: 'BRL',
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            }).format(value);
-        }
+const PMO_COLORS = {
+  'VIVO REPARO': '#c0392b',
+  'VITAL': '#2980b9',
+  'MILETO': '#8e44ad',
+  'VIVO N3': '#27ae60',
+  'VIVO SPM': '#f39c12'
+};
+const WH_COLORS = ['#c0392b','#2980b9','#27ae60','#f39c12','#8e44ad','#1abc9c','#e67e22','#3498db'];
 
-        function formatBRLSimple(value) {
-            const formatter = new Intl.NumberFormat('pt-BR', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
-            return 'R$ ' + formatter.format(value);
-        }
+// ========== HELPERS ==========
+function fmtBRL(v) {
+  if (v == null || isNaN(v)) return 'R$ 0,00';
+  return 'R$ ' + v.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function fmtK(v) {
+  if (v >= 1000000) return (v/1000000).toLocaleString('pt-BR',{maximumFractionDigits:1})+'M';
+  if (v >= 1000) return (v/1000).toLocaleString('pt-BR',{maximumFractionDigits:0})+'K';
+  return v.toLocaleString('pt-BR',{maximumFractionDigits:0});
+}
+function pct(a,b) { return b ? ((a-b)/b*100) : 0; }
+function pctStr(v) { return (v>=0?'+':'')+v.toFixed(1)+'%'; }
 
-        // Get filtered data
-        function getFilteredMonthlyData() {
-            if (currentFilter === 'Todos') {
-                return dashboardData.monthly.total;
-            }
-            const result = {};
-            for (const month of dashboardData.months) {
-                result[month] = dashboardData.monthly.by_pmo[month][currentFilter] || 0;
-            }
-            return result;
-        }
+function getFilteredWeeklyTotal(wk) {
+  if (currentFilter === 'Todos') return DATA.weekly.total[wk] || 0;
+  return (DATA.weekly.by_pmo[wk] || {})[currentFilter] || 0;
+}
+function getFilteredMonthlyTotal(mo) {
+  if (currentFilter === 'Todos') return DATA.monthly.total[mo] || 0;
+  return (DATA.monthly.by_pmo[mo] || {})[currentFilter] || 0;
+}
 
-        function getFilteredWeeklyData() {
-            if (currentFilter === 'Todos') {
-                return dashboardData.weekly.total;
-            }
-            const result = {};
-            for (const week of dashboardData.weeks) {
-                result[week] = dashboardData.weekly.by_pmo[week][currentFilter] || 0;
-            }
-            return result;
-        }
+const MONTH_NAMES = {'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'};
+function fmtMonth(m) { return MONTH_NAMES[m.split('-')[1]] + '/' + m.split('-')[0].slice(2); }
+function fmtWeek(w) { return w.replace('2026-',''); }
 
-        function getFilteredMonthlyByPMO() {
-            const months = dashboardData.months;
-            const lastMonth = months[months.length - 1];
-            const pmos = dashboardData.pmos;
-            const result = {};
-            for (const pmo of pmos) {
-                result[pmo] = dashboardData.monthly.by_pmo[lastMonth][pmo] || 0;
-            }
-            return result;
-        }
+// ========== PLOTLY LAYOUT BASE ==========
+const layoutBase = {
+  paper_bgcolor:'transparent', plot_bgcolor:'transparent',
+  font:{color:'#b0c4de',size:11},
+  margin:{l:60,r:20,t:10,b:40},
+  xaxis:{gridcolor:'#1a2a44',linecolor:'#1a2a44',tickfont:{size:10}},
+  yaxis:{gridcolor:'#1a2a44',linecolor:'#1a2a44',tickfont:{size:10},tickprefix:'R$ ',separatethousands:true},
+  legend:{orientation:'h',y:-0.15,font:{size:10}},
+  hovermode:'x unified'
+};
 
-        function getFilteredWeeklyByPMO() {
-            const weeks = dashboardData.weeks;
-            const lastWeek = weeks[weeks.length - 1];
-            const pmos = dashboardData.pmos;
-            const result = {};
-            for (const pmo of pmos) {
-                result[pmo] = dashboardData.weekly.by_pmo[lastWeek][pmo] || 0;
-            }
-            return result;
-        }
+// ========== CARDS ==========
+function renderCards() {
+  const c = document.getElementById('cardsContainer');
+  const weeks = DATA.weeks;
+  const months = DATA.months;
 
-        function getFilteredMonthlyByWarehouse() {
-            const months = dashboardData.months;
-            const lastMonth = months[months.length - 1];
-            const warehouses = dashboardData.warehouses;
-            const result = {};
-            for (const warehouse of warehouses) {
-                result[warehouse] = dashboardData.monthly.by_warehouse[lastMonth][warehouse] || 0;
-            }
-            return result;
-        }
+  // Total acumulado
+  let totalAcum = 0;
+  months.forEach(m => totalAcum += getFilteredMonthlyTotal(m));
 
-        function getFilteredWeeklyByWarehouse() {
-            const weeks = dashboardData.weeks;
-            const lastWeek = weeks[weeks.length - 1];
-            const warehouses = dashboardData.warehouses;
-            const result = {};
-            for (const warehouse of warehouses) {
-                result[warehouse] = dashboardData.weekly.by_warehouse[lastWeek][warehouse] || 0;
-            }
-            return result;
-        }
+  // Ultima semana e variacao
+  const lastW = weeks[weeks.length-1];
+  const prevW = weeks[weeks.length-2];
+  const lastWVal = getFilteredWeeklyTotal(lastW);
+  const prevWVal = getFilteredWeeklyTotal(prevW);
+  const wkVar = pct(lastWVal, prevWVal);
 
-        // Update KPIs
-        function updateKPIs() {
-            const months = dashboardData.months;
-            const weeks = dashboardData.weeks;
-            const lastMonth = months[months.length - 1];
-            const lastWeek = weeks[weeks.length - 1];
-            const prevWeek = weeks[weeks.length - 2];
+  // Ultimo mes e variacao
+  const lastM = months[months.length-1];
+  const prevM = months.length > 1 ? months[months.length-2] : null;
+  const lastMVal = getFilteredMonthlyTotal(lastM);
+  const prevMVal = prevM ? getFilteredMonthlyTotal(prevM) : 0;
+  const moVar = prevM ? pct(lastMVal, prevMVal) : 0;
 
-            let monthValue, weekValue, prevWeekValue;
+  // Meta semanal %
+  const metaPct = weeklyTarget > 0 ? (lastWVal / weeklyTarget * 100) : 0;
+  const metaColor = metaPct >= 100 ? '#27ae60' : metaPct >= 80 ? '#f39c12' : '#e74c3c';
 
-            if (currentFilter === 'Todos') {
-                monthValue = dashboardData.monthly.total[lastMonth];
-                weekValue = dashboardData.weekly.total[lastWeek];
-                prevWeekValue = dashboardData.weekly.total[prevWeek];
-            } else {
-                monthValue = dashboardData.monthly.by_pmo[lastMonth][currentFilter] || 0;
-                weekValue = dashboardData.weekly.by_pmo[lastWeek][currentFilter] || 0;
-                prevWeekValue = dashboardData.weekly.by_pmo[prevWeek][currentFilter] || 0;
-            }
+  // Media semanal
+  let totalWeeks = 0, sumWeeks = 0;
+  weeks.forEach(w => { const v = getFilteredWeeklyTotal(w); if(v>0){totalWeeks++;sumWeeks+=v;} });
+  const avgWeek = totalWeeks > 0 ? sumWeeks / totalWeeks : 0;
 
-            const variation = weekValue - prevWeekValue;
-            const variationPercent = prevWeekValue !== 0 ? (variation / prevWeekValue) * 100 : 0;
+  c.innerHTML = `
+    <div class="card">
+      <div class="label">Faturamento Acumulado 2026</div>
+      <div class="value">${fmtBRL(totalAcum)}</div>
+      <div class="sub neutral">${months.length} meses</div>
+    </div>
+    <div class="card">
+      <div class="label">Último Mês (${fmtMonth(lastM)})</div>
+      <div class="value">${fmtBRL(lastMVal)}</div>
+      <div class="sub ${moVar>=0?'up':'down'}">${prevM ? pctStr(moVar)+' vs '+fmtMonth(prevM) : ''}</div>
+    </div>
+    <div class="card">
+      <div class="label">Última Semana (${fmtWeek(lastW)})</div>
+      <div class="value">${fmtBRL(lastWVal)}</div>
+      <div class="sub ${wkVar>=0?'up':'down'}">${pctStr(wkVar)} vs ${fmtWeek(prevW)}</div>
+    </div>
+    <div class="card">
+      <div class="label">Média Semanal</div>
+      <div class="value">${fmtBRL(avgWeek)}</div>
+      <div class="sub neutral">${totalWeeks} semanas com faturamento</div>
+    </div>
+    <div class="card meta-card">
+      <div class="label">Meta Semanal</div>
+      <div class="value">${fmtBRL(weeklyTarget)}</div>
+      <div class="sub" style="color:${metaColor}">${fmtWeek(lastW)}: ${metaPct.toFixed(1)}% da meta</div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${Math.min(metaPct,100)}%;background:${metaColor};"></div></div>
+    </div>
+  `;
+}
 
-            document.getElementById('kpi-month').textContent = formatBRL(monthValue);
-            document.getElementById('kpi-month-period').textContent = 'Mês ' + lastMonth;
-            document.getElementById('kpi-week').textContent = formatBRL(weekValue);
-            document.getElementById('kpi-week-period').textContent = 'Semana ' + lastWeek;
-            document.getElementById('kpi-prev-week').textContent = formatBRL(prevWeekValue);
-            document.getElementById('kpi-variation-value').textContent = formatBRL(variation);
-            document.getElementById('kpi-variation-percent').textContent = Math.abs(variationPercent).toFixed(1) + '%';
+// ========== EVOLUTION CHART ==========
+function renderEvolution() {
+  const div = document.getElementById('evolutionChart');
 
-            const arrowEl = document.getElementById('variation-arrow');
-            const percentEl = document.getElementById('kpi-variation-percent').parentElement;
-            if (variation >= 0) {
-                arrowEl.textContent = '▲';
-                percentEl.className = 'kpi-variation variation-positive';
-            } else {
-                arrowEl.textContent = '▼';
-                percentEl.className = 'kpi-variation variation-negative';
-            }
-        }
+  if (currentView === 'weekly') {
+    const xLabels = DATA.weeks.map(fmtWeek);
+    const yVals = DATA.weeks.map(w => getFilteredWeeklyTotal(w));
 
-        // Update Evolution Chart
-        function updateEvolutionChart() {
-            let labels, values;
+    // Variation %
+    const variations = yVals.map((v,i) => i===0 ? 0 : pct(v, yVals[i-1]));
+    const varText = variations.map((v,i) => i===0 ? '' : pctStr(v));
 
-            if (chartView === 'monthly') {
-                labels = dashboardData.months;
-                const monthlyData = getFilteredMonthlyData();
-                values = labels.map(m => monthlyData[m]);
-            } else {
-                labels = dashboardData.weeks;
-                const weeklyData = getFilteredWeeklyData();
-                values = labels.map(w => weeklyData[w]);
-            }
+    const traces = [{
+      x: xLabels, y: yVals, type:'bar', name:'Faturamento',
+      marker:{color: yVals.map(v => v >= weeklyTarget ? '#27ae60' : '#c0392b'), opacity:0.85},
+      hovertemplate: '%{x}<br>R$ %{y:,.2f}<extra></extra>',
+      text: yVals.map(v => fmtK(v)), textposition:'outside', textfont:{size:9,color:'#8899aa'}
+    },{
+      x: xLabels, y: variations, type:'scatter', mode:'lines+markers+text', name:'Variação %',
+      yaxis:'y2', line:{color:'#f39c12',width:2}, marker:{size:5,color:'#f39c12'},
+      text: varText, textposition:'top center', textfont:{size:9,color:'#f39c12'},
+      hovertemplate: '%{x}: %{text}<extra></extra>'
+    }];
 
-            // Calculate variations
-            const variations = [0];
-            for (let i = 1; i < values.length; i++) {
-                const var_pct = values[i - 1] !== 0 ? ((values[i] - values[i - 1]) / values[i - 1]) * 100 : 0;
-                variations.push(var_pct);
-            }
+    // Meta line
+    traces.push({
+      x: xLabels, y: xLabels.map(()=>weeklyTarget), type:'scatter', mode:'lines',
+      name:'Meta', line:{color:'#fff',width:1,dash:'dot'}, hoverinfo:'skip'
+    });
 
-            const trace1 = {
-                x: labels,
-                y: values,
-                type: 'bar',
-                name: 'Faturamento',
-                marker: { color: '#1B3A5C' },
-                text: values.map(v => formatBRLSimple(v)),
-                textposition: 'outside',
-                hovertemplate: '<b>%{x}</b><br>Faturamento: %{text}<extra></extra>',
-                yaxis: 'y'
-            };
+    const layout = {...layoutBase,
+      yaxis:{...layoutBase.yaxis, title:'Faturamento (R$)'},
+      yaxis2:{overlaying:'y',side:'right',showgrid:false,ticksuffix:'%',
+        gridcolor:'transparent',linecolor:'transparent',tickfont:{size:9,color:'#f39c12'},zeroline:false},
+      barmode:'group', showlegend:true
+    };
+    Plotly.react(div, traces, layout, {responsive:true,displayModeBar:false});
 
-            const trace2 = {
-                x: labels,
-                y: variations,
-                type: 'scatter',
-                mode: 'lines+markers',
-                name: 'Variação %',
-                line: { color: '#C41E3A', width: 3 },
-                marker: { size: 8, color: '#C41E3A' },
-                hovertemplate: '<b>%{x}</b><br>Variação: %{y:.1f}%<extra></extra>',
-                yaxis: 'y2'
-            };
+  } else {
+    const xLabels = DATA.months.map(fmtMonth);
+    const yVals = DATA.months.map(m => getFilteredMonthlyTotal(m));
+    const variations = yVals.map((v,i) => i===0 ? 0 : pct(v, yVals[i-1]));
+    const varText = variations.map((v,i) => i===0 ? '' : pctStr(v));
 
-            const layout = {
-                title: '',
-                xaxis: { title: '' },
-                yaxis: { title: 'Faturamento (R$)', side: 'left', tickformat: ',.0f' },
-                yaxis2: { title: 'Variação (%)', overlaying: 'y', side: 'right' },
-                hovermode: 'x unified',
-                plot_bgcolor: '#fafafa',
-                paper_bgcolor: 'white',
-                margin: { t: 20, b: 40, l: 60, r: 60 },
-                legend: { x: 0.01, y: 0.99 }
-            };
+    const traces = [{
+      x: xLabels, y: yVals, type:'bar', name:'Faturamento',
+      marker:{color:'#c0392b',opacity:0.85},
+      hovertemplate: '%{x}<br>R$ %{y:,.2f}<extra></extra>',
+      text: yVals.map(v => fmtK(v)), textposition:'outside', textfont:{size:10,color:'#8899aa'}
+    },{
+      x: xLabels, y: variations, type:'scatter', mode:'lines+markers+text', name:'Variação %',
+      yaxis:'y2', line:{color:'#f39c12',width:2}, marker:{size:6,color:'#f39c12'},
+      text: varText, textposition:'top center', textfont:{size:10,color:'#f39c12'},
+      hovertemplate: '%{x}: %{text}<extra></extra>'
+    }];
 
-            Plotly.newPlot('evolution-chart', [trace1, trace2], layout, { responsive: true });
-        }
+    const layout = {...layoutBase,
+      yaxis:{...layoutBase.yaxis, title:'Faturamento (R$)'},
+      yaxis2:{overlaying:'y',side:'right',showgrid:false,ticksuffix:'%',
+        gridcolor:'transparent',linecolor:'transparent',tickfont:{size:9,color:'#f39c12'},zeroline:false},
+      barmode:'group', showlegend:true
+    };
+    Plotly.react(div, traces, layout, {responsive:true,displayModeBar:false});
+  }
+}
 
-        // Update PMO Chart
-        function updatePMOChart() {
-            const monthlyByPMO = getFilteredMonthlyByPMO();
-            const pmos = Object.keys(monthlyByPMO).sort((a, b) => monthlyByPMO[b] - monthlyByPMO[a]);
-            const values = pmos.map(p => monthlyByPMO[p]);
+// ========== PMO CHART (stacked bar) ==========
+function renderPMO() {
+  const div = document.getElementById('pmoChart');
+  const isWeekly = currentView === 'weekly';
+  const keys = isWeekly ? DATA.weeks : DATA.months;
+  const xLabels = keys.map(k => isWeekly ? fmtWeek(k) : fmtMonth(k));
+  const byPmo = isWeekly ? DATA.weekly.by_pmo : DATA.monthly.by_pmo;
 
-            const trace = {
-                x: values,
-                y: pmos,
-                type: 'bar',
-                orientation: 'h',
-                marker: { color: '#1B3A5C' },
-                text: values.map(v => formatBRLSimple(v)),
-                textposition: 'outside',
-                hovertemplate: '<b>%{y}</b><br>Faturamento: %{text}<extra></extra>'
-            };
+  let pmos = currentFilter === 'Todos' ? DATA.pmos : [currentFilter];
 
-            const layout = {
-                title: '',
-                xaxis: { title: '', tickformat: ',.0f' },
-                yaxis: { title: '' },
-                hovermode: 'y',
-                plot_bgcolor: '#fafafa',
-                paper_bgcolor: 'white',
-                margin: { t: 20, b: 40, l: 150, r: 80 }
-            };
+  const traces = pmos.map(p => ({
+    x: xLabels,
+    y: keys.map(k => (byPmo[k] || {})[p] || 0),
+    type:'bar', name:p,
+    marker:{color:PMO_COLORS[p]||'#666'},
+    hovertemplate: p+'<br>R$ %{y:,.2f}<extra></extra>'
+  }));
 
-            Plotly.newPlot('pmo-chart', [trace], layout, { responsive: true });
-        }
+  const layout = {...layoutBase, barmode:'stack', showlegend:true};
+  Plotly.react(div, traces, layout, {responsive:true,displayModeBar:false});
+}
 
-        // Update Warehouse Chart
-        function updateWarehouseChart() {
-            const warehouseData = getFilteredMonthlyByWarehouse();
-            const warehouses = Object.keys(warehouseData).sort((a, b) => warehouseData[b] - warehouseData[a]);
-            const values = warehouses.map(w => warehouseData[w]);
+// ========== WAREHOUSE CHART (horizontal bar ranking) ==========
+function renderWarehouse() {
+  const div = document.getElementById('whChart');
 
-            const trace = {
-                x: values,
-                y: warehouses,
-                type: 'bar',
-                orientation: 'h',
-                marker: { color: '#1B3A5C' },
-                text: values.map(v => formatBRLSimple(v)),
-                textposition: 'outside',
-                hovertemplate: '<b>%{y}</b><br>Faturamento: %{text}<extra></extra>'
-            };
+  // Aggregate across all months
+  let whTotals = {};
+  DATA.warehouses.forEach(w => { whTotals[w] = 0; });
+  DATA.months.forEach(m => {
+    const wd = DATA.monthly.by_warehouse[m] || {};
+    DATA.warehouses.forEach(w => { whTotals[w] += (wd[w] || 0); });
+  });
 
-            const layout = {
-                title: '',
-                xaxis: { title: '', tickformat: ',.0f' },
-                yaxis: { title: '' },
-                hovermode: 'y',
-                plot_bgcolor: '#fafafa',
-                paper_bgcolor: 'white',
-                margin: { t: 20, b: 40, l: 180, r: 80 }
-            };
+  let items = Object.entries(whTotals)
+    .map(([name, value]) => ({name, value}))
+    .filter(x => x.value > 0)
+    .sort((a, b) => a.value - b.value); // ascending so top bar is highest in Plotly
 
-            Plotly.newPlot('warehouse-chart', [trace], layout, { responsive: true });
-        }
+  const barColors = items.map((_, i) => {
+    const palette = ['#3498db','#2980b9','#1abc9c','#27ae60','#f39c12','#e67e22','#c0392b','#8e44ad'];
+    return palette[i % palette.length];
+  });
 
-        // Update Detail Table
-        function updateDetailTable() {
-            const months = dashboardData.months;
-            const weeks = dashboardData.weeks;
-            const lastMonth = months[months.length - 1];
-            const lastWeek = weeks[weeks.length - 1];
-            const prevWeek = weeks[weeks.length - 2];
+  const traces = [{
+    y: items.map(x => x.name),
+    x: items.map(x => x.value),
+    type: 'bar',
+    orientation: 'h',
+    marker: { color: barColors, opacity: 0.9 },
+    text: items.map(x => fmtBRL(x.value)),
+    textposition: 'outside',
+    textfont: { size: 10, color: '#b0c4de' },
+    hovertemplate: '%{y}<br>%{text}<extra></extra>',
+    cliponaxis: false
+  }];
 
-            const tbody = document.getElementById('detail-table-body');
-            tbody.innerHTML = '';
+  const layout = {
+    paper_bgcolor: 'transparent',
+    plot_bgcolor: 'transparent',
+    font: { color: '#b0c4de', size: 11 },
+    margin: { l: 190, r: 100, t: 25, b: 30 },
+    xaxis: {
+      gridcolor: '#1a2a44',
+      linecolor: '#1a2a44',
+      tickfont: { size: 9, color: '#5a7a9a' },
+      showticklabels: false,
+      zeroline: false
+    },
+    yaxis: {
+      tickfont: { size: 11, color: '#d0d8e0' },
+      gridcolor: 'transparent',
+      linecolor: 'transparent',
+      automargin: true
+    },
+    showlegend: false,
+    annotations: [{
+      x: 0.5, y: 1.06, xref: 'paper', yref: 'paper',
+      text: 'Acumulado 2026', showarrow: false,
+      font: { size: 10, color: '#8899aa' }
+    }]
+  };
 
-            const pmos = dashboardData.pmos;
-            for (const pmo of pmos) {
-                let monthValue, weekValue, prevWeekValue;
+  Plotly.react(div, traces, layout, { responsive: true, displayModeBar: false });
+}
 
-                if (currentFilter === 'Todos') {
-                    monthValue = dashboardData.monthly.by_pmo[lastMonth][pmo] || 0;
-                    weekValue = dashboardData.weekly.by_pmo[lastWeek][pmo] || 0;
-                    prevWeekValue = dashboardData.weekly.by_pmo[prevWeek][pmo] || 0;
-                } else if (currentFilter === pmo) {
-                    monthValue = dashboardData.monthly.by_pmo[lastMonth][pmo] || 0;
-                    weekValue = dashboardData.weekly.by_pmo[lastWeek][pmo] || 0;
-                    prevWeekValue = dashboardData.weekly.by_pmo[prevWeek][pmo] || 0;
-                } else {
-                    continue;
-                }
+// ========== TABLES ==========
+function renderTables() {
+  // Monthly by PMO
+  let html = '<table><tr><th>Mês</th>';
+  const pmos = currentFilter === 'Todos' ? DATA.pmos : [currentFilter];
+  pmos.forEach(p => html += '<th>'+p+'</th>');
+  html += '<th>Total</th></tr>';
 
-                const evolution = weekValue - prevWeekValue;
-                const variationPercent = prevWeekValue !== 0 ? (evolution / prevWeekValue) * 100 : 0;
+  DATA.months.forEach(m => {
+    html += '<tr><td>'+fmtMonth(m)+'</td>';
+    let rowTotal = 0;
+    pmos.forEach(p => {
+      const v = (DATA.monthly.by_pmo[m]||{})[p] || 0;
+      rowTotal += v;
+      html += '<td>'+fmtBRL(v)+'</td>';
+    });
+    html += '<td style="font-weight:600;color:#fff">'+fmtBRL(rowTotal)+'</td></tr>';
+  });
 
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td><strong>${pmo}</strong></td>
-                    <td>${formatBRL(weekValue)}</td>
-                    <td>${formatBRL(prevWeekValue)}</td>
-                    <td>${formatBRL(evolution)}</td>
-                    <td>${variationPercent >= 0 ? '▲' : '▼'} ${Math.abs(variationPercent).toFixed(1)}%</td>
-                `;
-                tbody.appendChild(row);
-            }
+  // Totals row
+  html += '<tr style="border-top:2px solid #2a3f5f;font-weight:600;color:#fff"><td>Total</td>';
+  let grandTotal = 0;
+  pmos.forEach(p => {
+    let sum = 0;
+    DATA.months.forEach(m => sum += (DATA.monthly.by_pmo[m]||{})[p] || 0);
+    grandTotal += sum;
+    html += '<td>'+fmtBRL(sum)+'</td>';
+  });
+  html += '<td>'+fmtBRL(grandTotal)+'</td></tr></table>';
+  document.getElementById('monthlyTable').innerHTML = html;
 
-            // If filter is specific PMO, show only that PMO
-            if (currentFilter !== 'Todos') {
-                tbody.innerHTML = '';
-                const pmo = currentFilter;
-                const monthValue = dashboardData.monthly.by_pmo[lastMonth][pmo] || 0;
-                const weekValue = dashboardData.weekly.by_pmo[lastWeek][pmo] || 0;
-                const prevWeekValue = dashboardData.weekly.by_pmo[prevWeek][pmo] || 0;
-                const evolution = weekValue - prevWeekValue;
-                const variationPercent = prevWeekValue !== 0 ? (evolution / prevWeekValue) * 100 : 0;
+  // Monthly by Warehouse
+  let html2 = '<table><tr><th>Mês</th>';
+  DATA.warehouses.forEach(w => html2 += '<th style="font-size:9px">'+w+'</th>');
+  html2 += '<th>Total</th></tr>';
+  DATA.months.forEach(m => {
+    html2 += '<tr><td>'+fmtMonth(m)+'</td>';
+    let rowT = 0;
+    DATA.warehouses.forEach(w => {
+      const v = (DATA.monthly.by_warehouse[m]||{})[w] || 0;
+      rowT += v;
+      html2 += '<td>'+(v > 0 ? fmtK(v) : '-')+'</td>';
+    });
+    html2 += '<td style="font-weight:600;color:#fff">'+fmtBRL(rowT)+'</td></tr>';
+  });
+  html2 += '</table>';
+  document.getElementById('whTable').innerHTML = html2;
+}
 
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td><strong>${pmo}</strong></td>
-                    <td>${formatBRL(weekValue)}</td>
-                    <td>${formatBRL(prevWeekValue)}</td>
-                    <td>${formatBRL(evolution)}</td>
-                    <td>${variationPercent >= 0 ? '▲' : '▼'} ${Math.abs(variationPercent).toFixed(1)}%</td>
-                `;
-                tbody.appendChild(row);
-            }
-        }
+// ========== INTERACTIONS ==========
+function setFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll('.fbtn').forEach(b => b.classList.toggle('active', b.textContent.trim()===f));
+  renderAll();
+}
+function setView(v) {
+  currentView = v;
+  document.querySelectorAll('.toggle-btn').forEach(b => b.classList.toggle('active', b.textContent.trim()===(v==='weekly'?'Semanal':'Mensal')));
+  renderAll();
+}
+function updateMeta() {
+  const raw = document.getElementById('metaInput').value.replace(/[^\d,\.]/g,'').replace(/\./g,'').replace(',','.');
+  weeklyTarget = parseFloat(raw) || 375000;
+  document.getElementById('metaInput').value = weeklyTarget.toLocaleString('pt-BR',{minimumFractionDigits:2});
+  renderAll();
+}
+function renderAll() {
+  renderCards();
+  renderEvolution();
+  renderPMO();
+  renderWarehouse();
+  renderTables();
+}
 
-        // Filter function
-        function filterByPMO(pmo) {
-            currentFilter = pmo;
-
-            // Update filter buttons
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.textContent === pmo) {
-                    btn.classList.add('active');
-                }
-            });
-
-            // Update all visuals
-            updateKPIs();
-            updateEvolutionChart();
-            updatePMOChart();
-            updateWarehouseChart();
-            updateDetailTable();
-        }
-
-        // Toggle chart view
-        function toggleChartView(view) {
-            chartView = view;
-
-            document.querySelectorAll('.toggle-btn').forEach(btn => {
-                btn.classList.remove('active');
-                if ((view === 'monthly' && btn.textContent === 'Mensal') ||
-                    (view === 'weekly' && btn.textContent === 'Semanal')) {
-                    btn.classList.add('active');
-                }
-            });
-
-            updateEvolutionChart();
-        }
-
-        // Meta target edit
-        function editMeta() {
-            const input = document.getElementById('meta-input');
-            input.style.cursor = 'text';
-            input.select();
-        }
-
-        function saveMeta() {
-            const input = document.getElementById('meta-input');
-            const value = input.value.replace(/[^\d,]/g, '').replace(',', '.');
-            const numValue = parseFloat(value) || 375000;
-            metaTarget = numValue;
-            input.value = formatBRLSimple(numValue);
-            input.style.cursor = 'pointer';
-        }
-
-        // Initialize
-        updateKPIs();
-        updateEvolutionChart();
-        updatePMOChart();
-        updateWarehouseChart();
-        updateDetailTable();
-    </script>
+// ========== INIT ==========
+document.getElementById('updateInfo').textContent = 'Atualizado: ' + new Date().toLocaleDateString('pt-BR');
+renderAll();
+</script>
 </body>
 </html>
